@@ -1,39 +1,23 @@
-$(function(){
-	//var objFirebase = new Firebase('https://luminous-torch-8836.firebaseio.com/');
-	var objFirebase = new Firebase('https://chatusb.firebaseio.com/');
-	
-	$("#btnEnviar").click(enviar_mensaje);
+var myFirebase = new Firebase('https://incandescent-torch-3997.firebaseio.com/');
+var usernameInput = document.querySelector('#username');
+var textInput = document.querySelector('#text');
+var postButton = document.querySelector('#post');
 
-	function enviar_mensaje(){
-		console.log("enviar_mensaje");
-		var nombre = $("#txtNombre").val();
-		var mensaje = $("#txtMensaje").val();
+postButton.addEventListener("click", function() { 
+	var username = usernameInput.value;  
+	var text = textInput.value;
 
-		objFirebase.push(
-			{
-				autor:nombre,
-				mensaje:mensaje
-			}
-		);
+	username = username.replace(/\</g, "&lt;").replace(/\>/g, "&gt;");
+	text = text.replace(/\</g, "&lt;").replace(/\>/g, "&gt;");
 
-		$("#txtMensaje").val('');
-	}
+	myFirebase.push({username:username, text:text});textInput.value = "";
 
-	objFirebase.on("child_added", function(data){
-		var registro = data.val();
-		var plantilla = getPlantilla(registro.autor, registro.mensaje);
+	myFirebase.set(username + " says: " + text);  
+	textInput.value = "";
+});
 
-		$('#results').append(plantilla);
-
-	});
-
-	function getPlantilla(autor, mensaje){
-		var html = '<div class="msg"><div class="name">' +
-               '<b>' + autor + '</b>' +
-               '<p>' + mensaje + '</p>' +
-               '</div>';
-
-        return html;
-	}
-
+myFirebase.on('child_added', function(snapshot) {    
+	var msg = snapshot.val();    
+	var html ='<div class="msg"><div class="name">'+'<b>'+ msg.username +'</b>'+'<p>'+ msg.text +'</p>'+'</div>'; 
+	document.querySelector("#results").innerHTML += html;  
 });
